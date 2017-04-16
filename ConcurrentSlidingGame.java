@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class ValueLatch <T> {
-    //@GuardedBy("this") 
     private T value = null;
     private final CountDownLatch done = new CountDownLatch(1);
 
@@ -54,12 +53,10 @@ public class ConcurrentSlidingGame {
     	}
     }
 	
-	public static void Search(final ExecutorService exec, final ValueLatch<PuzzleNode> solution, final AtomicInteger taskCount, final ConcurrentMap<String, Boolean> seen, final PuzzleNode node) {		
-		//System.out.println ("haha" + ConcurrentSlidingGame.toString(node.config));
+	public static void Search(final ExecutorService exec, final ValueLatch<PuzzleNode> solution, final AtomicInteger taskCount, final ConcurrentMap<String, Boolean> seen, final PuzzleNode node) {
     	taskCount.incrementAndGet();
     	exec.execute(new Runnable () {
 			public void run() {
-				//System.out.println (ConcurrentSlidingGame.toString(node.config));
 				if (solution.isSet() || seen.putIfAbsent(ConcurrentSlidingGame.toString(node.config), true) != null) {
 					if (taskCount.decrementAndGet() == 0) {
 						solution.setValue(null);
@@ -97,29 +94,24 @@ public class ConcurrentSlidingGame {
     	}
     	
     	List<int[]> toReturn = new ArrayList<int[]>();
-    	
-    	//the empty slot goes right
     	if (emptySlot != 2 && emptySlot != 5 && emptySlot != 8) {
     		int[] newConfig = boardConfig.clone(); 
     		newConfig[emptySlot]= newConfig[emptySlot+1];
     		newConfig[emptySlot+1]=0;
     		toReturn.add(newConfig);
     	}
-    	//the empty slot goes left    	
     	if (emptySlot != 0 && emptySlot !=3 && emptySlot != 6) {
     		int[] newConfig = boardConfig.clone();     		
     		newConfig[emptySlot]=newConfig[emptySlot-1];
     		newConfig[emptySlot-1]=0;
     		toReturn.add(newConfig);
     	}
-    	//the empty slot goes down   
     	if (emptySlot != 6 && emptySlot != 7 && emptySlot != 8) {
     		int[] newConfig = boardConfig.clone();     		    		
     		newConfig[emptySlot]=newConfig[emptySlot+3];
     		newConfig[emptySlot+3]=0;
     		toReturn.add(newConfig);
     	}
-    	//the empty slot goes up 
     	if (emptySlot != 0 && emptySlot != 1 && emptySlot != 2) {
     		int[] newConfig = boardConfig.clone();     		    		
     		newConfig[emptySlot] = newConfig[emptySlot-3];
